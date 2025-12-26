@@ -23,15 +23,15 @@ const createGame = async (req, res) => {
       });
     }
     //to do :avatar upload pending
-    const user = await userModel.findById(req.user).select("role");
-    console.log("role", user);
-    if (user.role != "developer") {
-      return res.status(400).json({
-        success: false,
-        message: "you are not a developer",
-        error: "Bad Request",
-      });
-    }
+    // const user = await userModel.findById(req.user).select("role");
+    // console.log("role", user);
+    // if (user.role != "developer") {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "you are not a developer",
+    //     error: "Bad Request",
+    //   });
+    // }
     const game = await gameModel.create({
       title,
       genre,
@@ -55,8 +55,13 @@ const createGame = async (req, res) => {
 //List all game
 const listAllGame = async (req, res) => {
   try {
-    const { limit = 25, page = 1, genre, status, keyword } = req.query;
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    // const { limit = 25, page = 1, genre, status, keyword } = req.query;
+    // const skip = (parseInt(page) - 1) * parseInt(limit);
+    const { genre, keyword } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+    const status = "approved";
     // TODO: imlement date filter
     //filter object
     const where = {
@@ -68,9 +73,10 @@ const listAllGame = async (req, res) => {
     if (genre) {
       where.genre = genre;
     }
-    if (status) {
-      where.status = status;
-    }
+    // if (status) {
+    //   where.status = status;
+    // }
+    where.status = status;
     console.log("where", where);
     const games = await gameModel.find(where).limit(parseInt(limit)).skip(skip);
     const totalDataCount = await gameModel.countDocuments(where);
@@ -95,7 +101,50 @@ const listAllGame = async (req, res) => {
     });
   }
 };
+const approveGame = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Game id is missing",
+        error: "Bad Request",
+      });
+    }
+    const user = await userModel.findById(req.user).select("role");
+    // if (user.role != "admin") {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message: "You are not authorized to approve the game",
+    //     error: "Forbidden",
+    //   });
+    // }
+
+    const game = await gameModel.findByIdAndUpdate(id, { status: "approved" });
+
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        message: "Game not found",
+        error: "Not Found",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Game approved successfully",
+      data: game,
+    });
+  } catch (err) {
+    console.log("controller@approveGame", err.message);
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+      error: "Internal Server Error",
+    });
+  } //to do
+};
 module.exports = {
   createGame,
   listAllGame,
+  approveGame,
 };

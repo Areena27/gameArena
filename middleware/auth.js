@@ -1,4 +1,5 @@
-const jwt=require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
+const userModel = require("../model/user.model");
 const protectRoute = async (req, res, next) => {
   try {
     const token = req.cookies.token || "";
@@ -22,5 +23,17 @@ const protectRoute = async (req, res, next) => {
     });
   }
 };
-
-module.exports = protectRoute;
+const authorizeRoles = (roles) => {
+  return async (req, res, next) => {
+    const user = await userModel.findById(req.user).select("role");
+    if (!roles.includes(user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to access this route",
+        error: "Forbidden",
+      });
+    }
+    next();
+  };
+};
+module.exports = { protectRoute, authorizeRoles };
