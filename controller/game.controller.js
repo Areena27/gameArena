@@ -70,7 +70,7 @@ const listAllGame = async (req, res) => {
       // genre,
       // status,
       title: { $regex: keyword || "", $options: "i" },
-      desc: { $regex: keyword || "", $options: "i" },
+      // desc: { $regex: keyword || "", $options: "i" },
     };
     if (genre) {
       where.genre = genre;
