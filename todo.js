@@ -9,4 +9,7 @@
 // TODO : Implement Listing for purchase/my games.
 // TODO : Player/Developer Stats 
 // TODO : User profile get Details
-// TODO : 
+// TODO : Add indexing in MongoDb
+// TODO : Total Player Played in gameModel
+// TODO : Implement List of Trending Games,Freture Games,latest Game
+// TODO : Implement Play Game API

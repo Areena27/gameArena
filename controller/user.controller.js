@@ -1,4 +1,5 @@
 const userModel = require("../model/user.model");
+const getUser
 const updateUser = async (req, res) => {
   try {
     
