@@ -12,23 +12,40 @@ import { login } from "@/redux/slices/authSlice";
 import { authAPI } from "@/services/api";
 import { setTheme } from "@/redux/slices/themeSlice";
 
+const INITIAL_FORM = { email: "", password: "" };
+
+const FORM_FIELDS = [
+  { key: "email", label: "Email", type: "email", placeholder: "Enter your email" },
+  { key: "password", label: "Password", type: "password", placeholder: "Enter your password" },
+];
+
+const validateForm = (form) => {
+  if (!form.email || !form.password) {
+    return "Email or Password is missing";
+  }
+  return null;
+};
+
 export default function LoginPage() {
   const dispatch = useDispatch();
   const router = useRouter();
-
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState(INITIAL_FORM);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     dispatch(setTheme(Cookies.get("theme") || "dark"));
   }, [dispatch]);
 
+  const handleChange = (key, value) => {
+    setForm(prev => ({ ...prev, [key]: value }));
+    setError(null);
+  };
+
   const handleLogin = async () => {
-    if (!form.email || !form.password) {
-      setError("Email or Password is missing");
-      setShowToast(true);
+    const validationError = validateForm(form);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -36,23 +53,20 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const response = await authAPI.login(form.email, form.password);
+      const response = await authAPI.login({ email: form.email, password: form.password });
 
-      if (!response?.token) {
-        throw new Error("Login failed");
+      if (!response?.success || !response?.token) {
+        throw new Error(response?.message || "Login failed");
       }
 
-      dispatch(
-        login({
-          token: response.token,
-          role: response.data?.role || "user",
-        })
-      );
+      dispatch(login({
+        token: response.token,
+        role: response.data?.role || "user",
+      }));
 
       router.push("/");
     } catch (err) {
-      setError(err?.message || "Internal Server Error");
-      setShowToast(true);
+      setError(err?.response?.data?.message || err?.message || "Internal Server Error");
     } finally {
       setLoading(false);
     }
@@ -68,14 +82,7 @@ export default function LoginPage() {
         {loading && <Loader fullscreen />}
 
         <AuthLayout>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px",
-              width: "100%",
-            }}
-          >
+          <Box display="flex" flexDirection="column" gap="20px" width="100%">
             <Typography
               variant="h4"
               className="gaming-title"
@@ -94,25 +101,19 @@ export default function LoginPage() {
               Sign in to continue to CyberArena
             </Typography>
 
-            <InputField
-              label="Email"
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              error={error && !form.email ? error : null}
-              placeholder="Enter your email"
-            />
+            {FORM_FIELDS.map(({ key, label, type, placeholder }) => (
+              <InputField
+                key={key}
+                label={label}
+                type={type}
+                value={form[key]}
+                onChange={(e) => handleChange(key, e.target.value)}
+                error={error && !form[key] ? error : null}
+                placeholder={placeholder}
+              />
+            ))}
 
-            <InputField
-              label="Password"
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              error={error && !form.password ? error : null}
-              placeholder="Enter your password"
-            />
-
-            <Box sx={{ display: "flex", justifyContent: "flex-end", marginTop: "-8px" }}>
+            <Box display="flex" justifyContent="flex-end" mt="-8px">
               <Link
                 href="/auth/forgotPassword"
                 sx={{
@@ -150,11 +151,11 @@ export default function LoginPage() {
           </Box>
         </AuthLayout>
 
-        {showToast && error && (
+        {error && (
           <Toast
             message={error}
             type="error"
-            onClose={() => setShowToast(false)}
+            onClose={() => setError(null)}
           />
         )}
       </Layout>

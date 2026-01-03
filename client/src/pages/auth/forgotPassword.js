@@ -1,22 +1,30 @@
 import Head from "next/head";
 import { useState, useEffect } from "react";
 import { Box, Container, Typography, Link, CssBaseline, ThemeProvider } from "@mui/material";
+import Cookies from "js-cookie";
+import { useDispatch, useSelector } from "react-redux";
+
+import Layout from "@/components/common/layoutComponent";
 import { InputField, Button, Toast, Loader } from "@/components/common/uiComponents";
 import { setTheme } from "@/redux/slices/themeSlice";
 import { lightTheme, darkTheme } from "@/styles/mui/theme";
-import Cookies from "js-cookie";
-import Layout from "@/components/common/layoutComponent";
-import { useDispatch, useSelector } from "react-redux";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const validateEmail = (email) => {
+  if (!email) return "Email is required";
+  if (!EMAIL_REGEX.test(email)) return "Please enter a valid email address";
+  return null;
+};
 
 export default function ForgotPasswordPage() {
   const dispatch = useDispatch();
   const mode = useSelector((state) => state.theme.mode);
-
+  
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
-  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
     dispatch(setTheme(Cookies.get("theme") || "dark"));
@@ -25,16 +33,9 @@ export default function ForgotPasswordPage() {
   const theme = (mode || "dark") === "dark" ? darkTheme : lightTheme;
 
   const handleSubmit = async () => {
-    if (!email) {
-      setError("Email is required");
-      setShowToast(true);
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address");
-      setShowToast(true);
+    const validationError = validateEmail(email);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -42,15 +43,26 @@ export default function ForgotPasswordPage() {
     setError(null);
 
     try {
+      // TODO: Replace with actual API call
+      // const response = await authAPI.forgotPassword({ email });
       await new Promise((r) => setTimeout(r, 1500));
       setSuccess(true);
-      setShowToast(true);
-    } catch {
-      setError("Failed to send reset link");
-      setShowToast(true);
+    } catch (err) {
+      setError(err?.response?.data?.message || "Failed to send reset link");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleResend = () => {
+    setSuccess(false);
+    setEmail("");
+    setError(null);
+  };
+
+  const handleEmailChange = (value) => {
+    setEmail(value);
+    setError(null);
   };
 
   const renderForm = () => (
@@ -70,13 +82,7 @@ export default function ForgotPasswordPage() {
         Forgot Password?
       </Typography>
 
-      <Typography
-        variant="body2"
-        sx={{
-          marginBottom: "32px",
-          textAlign: "center",
-        }}
-      >
+      <Typography variant="body2" sx={{ marginBottom: "32px", textAlign: "center" }}>
         No worries! Enter your email address and we'll send you a link to reset your password.
       </Typography>
 
@@ -85,10 +91,7 @@ export default function ForgotPasswordPage() {
           label="Email"
           type="email"
           value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            setError(null);
-          }}
+          onChange={(e) => handleEmailChange(e.target.value)}
           error={error && !email ? error : null}
           placeholder="Enter your email address"
         />
@@ -130,14 +133,7 @@ export default function ForgotPasswordPage() {
       </Typography>
 
       <Box display="flex" flexDirection="column" gap="12px" mt="16px">
-        <Button
-          label="Resend Email"
-          variant="secondary"
-          onClick={() => {
-            setSuccess(false);
-            setEmail("");
-          }}
-        />
+        <Button label="Resend Email" variant="secondary" onClick={handleResend} />
         <Link
           href="/auth/login"
           sx={{
@@ -182,11 +178,19 @@ export default function ForgotPasswordPage() {
             </Container>
           </Box>
 
-          {showToast && (
+          {error && (
             <Toast
-              message={success ? "Reset link sent successfully!" : error}
-              type={success ? "success" : "error"}
-              onClose={() => setShowToast(false)}
+              message={error}
+              type="error"
+              onClose={() => setError(null)}
+            />
+          )}
+          
+          {success && (
+            <Toast
+              message="Reset link sent successfully!"
+              type="success"
+              onClose={() => setSuccess(false)}
             />
           )}
         </Layout>
