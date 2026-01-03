@@ -22,12 +22,10 @@ export default function LoginPage() {
   const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
-    // Keep theme behavior unchanged
     dispatch(setTheme(Cookies.get("theme") || "dark"));
   }, [dispatch]);
 
   const handleLogin = async () => {
-    // 🔴 MUST match backend message
     if (!form.email || !form.password) {
       setError("Email or Password is missing");
       setShowToast(true);
@@ -40,11 +38,6 @@ export default function LoginPage() {
     try {
       const response = await authAPI.login(form.email, form.password);
 
-      /**
-       * IMPORTANT:
-       * authAPI.login MUST throw when success === false.
-       * If it does not, this check prevents silent failures.
-       */
       if (!response?.token) {
         throw new Error("Login failed");
       }
@@ -58,7 +51,6 @@ export default function LoginPage() {
 
       router.push("/");
     } catch (err) {
-      // 🔴 Show backend message EXACTLY
       setError(err?.message || "Internal Server Error");
       setShowToast(true);
     } finally {

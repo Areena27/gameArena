@@ -80,5 +80,4 @@ export function GameCard({
   );
 }
 
-// GameGrid, GameMeta, and GamePlayer removed - moved to Online-free-Games/unused-components-backup.jsx
 

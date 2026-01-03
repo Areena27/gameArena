@@ -1,6 +1,6 @@
 import { Box, Typography } from "@mui/material";
 
-/* Reusable section wrapper */
+
 export function AboutSection({ title, children }) {
   return (
     <Box>
@@ -17,7 +17,6 @@ export function AboutSection({ title, children }) {
   );
 }
 
-/* Reusable feature item */
 export function FeatureItem({ title, description }) {
   return (
     <Box>

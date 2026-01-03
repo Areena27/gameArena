@@ -40,14 +40,13 @@ export default function SignUpPage() {
   };
 
   const handleSignUp = async () => {
-    // 🔴 Must match backend validation message
+
     if (!form.name || !form.email || !form.password) {
       setError("some field missing");
       setShowToast(true);
       return;
     }
 
-    // Frontend-only UX validations (kept intentionally)
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match");
       setShowToast(true);
@@ -79,7 +78,6 @@ export default function SignUpPage() {
         ...(form.dob && { dob: form.dob }),
       });
 
-      // Safety: handle success:false with 200
       if (!response?.token) {
         throw new Error("Signup failed");
       }
@@ -93,7 +91,6 @@ export default function SignUpPage() {
 
       router.push("/");
     } catch (err) {
-      // Display backend message exactly
       setError(err?.message || "Internal Server Error");
       setShowToast(true);
     } finally {

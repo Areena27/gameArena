@@ -5,8 +5,6 @@ import { Typography, FormControl, InputLabel, Select, MenuItem, Box } from "@mui
 
 const GENRES = ["action", "adventure", "puzzle", "rpg", "sports", "strategy", "other"];
 
-// DeveloperProfileCard and DeveloperStats removed - moved to Online-free-Games/unused-components-backup.jsx
-
 export function UploadGameForm({ onSubmit, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
