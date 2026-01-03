@@ -93,7 +93,7 @@ export default function SignUpPage() {
 
       router.push("/");
     } catch (err) {
-      // 🔴 Display backend message exactly
+      // Display backend message exactly
       setError(err?.message || "Internal Server Error");
       setShowToast(true);
     } finally {
