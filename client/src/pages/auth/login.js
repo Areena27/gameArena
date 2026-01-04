@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/router";
 import { Box, Typography, Link } from "@mui/material";
-import Cookies from "js-cookie";
+import { Cookies } from "react-cookie";
 
 import Layout from "@/components/common/layoutComponent";
 import AuthLayout from "@/components/common/authLayout";
@@ -11,6 +11,8 @@ import { InputField, Button, Toast, Loader } from "@/components/common/uiCompone
 import { login } from "@/redux/slices/authSlice";
 import { authAPI } from "@/services/api";
 import { setTheme } from "@/redux/slices/themeSlice";
+
+const cookies = new Cookies();
 
 const INITIAL_FORM = { email: "", password: "" };
 
@@ -34,7 +36,8 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    dispatch(setTheme(Cookies.get("theme") || "dark"));
+    const theme = cookies.get("theme") || "dark";
+    dispatch(setTheme(theme));
   }, [dispatch]);
 
   const handleChange = (key, value) => {
@@ -59,9 +62,11 @@ export default function LoginPage() {
         throw new Error(response?.message || "Login failed");
       }
 
+      const role = response.data?.role || "user";
+      
       dispatch(login({
         token: response.token,
-        role: response.data?.role || "user",
+        role: role,
       }));
 
       router.push("/");

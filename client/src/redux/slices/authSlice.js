@@ -1,12 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
-import Cookies from "js-cookie";
+import { Cookies } from "react-cookie";
+
+const cookies = new Cookies();
 
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    isAuthenticated: !!Cookies.get("token"),
-    role: Cookies.get("role") || "guest",
-    token: Cookies.get("token") || null,
+    isAuthenticated: !!cookies.get("token"),
+    role: cookies.get("role") || "guest",
+    token: cookies.get("token") || null,
   },
   reducers: {
     login(state, action) {
@@ -15,19 +17,25 @@ const authSlice = createSlice({
       state.token = token;
       state.role = role;
 
-      Cookies.set("token", token, { expires: 7 });
-      Cookies.set("role", role, { expires: 7 });
+      cookies.set("token", token, { path: "/", maxAge: 60 * 60 * 24 * 7 });
+      cookies.set("role", role, { path: "/", maxAge: 60 * 60 * 24 * 7 });
     },
     logout(state) {
       state.isAuthenticated = false;
       state.token = null;
       state.role = "guest";
 
-      Cookies.remove("token");
-      Cookies.remove("role");
+      cookies.remove("token", { path: "/" });
+      cookies.remove("role", { path: "/" });
+    },
+    initializeAuth(state, action) {
+      const { token, role } = action.payload;
+      state.isAuthenticated = !!token;
+      state.token = token || null;
+      state.role = role || "guest";
     },
   },
 });
 
-export const { login, logout } = authSlice.actions;
+export const { login, logout, initializeAuth } = authSlice.actions;
 export default authSlice.reducer;

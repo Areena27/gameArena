@@ -1,22 +1,40 @@
-import { UploadGameForm } from "@/components/common/developerComponents";
+import Head from "next/head";
 import { useRouter } from "next/router";
-import { Typography, Box } from "@mui/material";
+import { Container, Typography, Box } from "@mui/material";
+import { UploadGameForm } from "@/components/common/developerComponents";
+import Layout from "@/components/common/layoutComponent";
 
 export default function UploadPage() {
   const router = useRouter();
 
-  const handleSuccess = (response) => {
-    // Redirect to dashboard after successful upload
+  const handleSuccess = () => {
     router.push("/developer/dashboard");
   };
 
   return (
-    <Box sx={{ maxWidth: "800px", margin: "0 auto", padding: "24px" }}>
-      <Typography variant="h4" sx={{ marginBottom: "24px" }}>
-        Upload New Game
-      </Typography>
-      <UploadGameForm onSuccess={handleSuccess} />
-    </Box>
+    <>
+      <Head>
+        <title>Upload Game | CyberArena</title>
+      </Head>
+      <Layout>
+        <Container maxWidth="md" sx={{ py: 4 }}>
+          <Typography
+            variant="h4"
+            className="gaming-title"
+            sx={{
+              fontFamily: "'Jersey 10', sans-serif",
+              fontWeight: 400,
+              textTransform: "uppercase",
+              letterSpacing: "2px",
+              mb: 4,
+            }}
+          >
+            Upload New Game
+          </Typography>
+          <UploadGameForm onSuccess={handleSuccess} />
+        </Container>
+      </Layout>
+    </>
   );
 }
 

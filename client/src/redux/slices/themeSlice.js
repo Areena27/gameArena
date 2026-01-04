@@ -1,5 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import Cookies from "js-cookie";
+import { Cookies } from "react-cookie";
+
+const cookies = new Cookies();
 
 const themeSlice = createSlice({
   name: "theme",
@@ -11,11 +13,11 @@ const themeSlice = createSlice({
     setTheme(state, action) {
       state.mode = action.payload;
       state.hydrated = true;
-      Cookies.set("theme", state.mode, { expires: 365 });
+      cookies.set("theme", state.mode, { path: "/", maxAge: 60 * 60 * 24 * 365 });
     },
     toggleTheme(state) {
       state.mode = state.mode === "dark" ? "light" : "dark";
-      Cookies.set("theme", state.mode, { expires: 365 });
+      cookies.set("theme", state.mode, { path: "/", maxAge: 60 * 60 * 24 * 365 });
     },
   },
 });

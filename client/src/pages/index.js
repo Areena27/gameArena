@@ -2,13 +2,15 @@ import Head from "next/head";
 import { useState, useEffect } from "react";
 import { useDispatch} from "react-redux";
 import { Box, Typography, Grid } from "@mui/material";
+import { Cookies } from "react-cookie";
 import { setTheme } from "@/redux/slices/themeSlice";
-import Cookies from "js-cookie";
 import { gameAPI } from "@/services/api";
 import { GameCard } from "@/components/common/gameComponents";
 import { Loader, Toast, Button } from "@/components/common/uiComponents";
 import Layout from "@/components/common/layoutComponent";
 import { Hero, GameCategory, PlatformFeatures } from "@/components/common/homeComponents";
+
+const cookies = new Cookies();
 //import { GENRES } from "@/constants/genres";
 
 // Static game data for featured sections
@@ -78,9 +80,9 @@ export default function Home() {
   });
 
   useEffect(() => {
-    const savedTheme = Cookies.get("theme");
-    if (savedTheme) {
-      dispatch(setTheme(savedTheme));
+    const theme = cookies.get("theme");
+    if (theme) {
+      dispatch(setTheme(theme));
     }
   }, [dispatch]);
 

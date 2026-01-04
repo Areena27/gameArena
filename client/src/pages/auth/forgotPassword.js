@@ -1,12 +1,9 @@
 import Head from "next/head";
-import { useState, useEffect } from "react";
-import { Box, Container, Typography, Link, CssBaseline, ThemeProvider } from "@mui/material";
-import Cookies from "js-cookie";
-import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
+import { Box, Container, Typography, Link } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import Layout from "@/components/common/layoutComponent";
 import { InputField, Button, Toast, Loader } from "@/components/common/uiComponents";
-import { setTheme } from "@/redux/slices/themeSlice";
-import { lightTheme, darkTheme } from "@/styles/mui/theme";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const validateEmail = (email) => {
@@ -16,19 +13,12 @@ const validateEmail = (email) => {
 };
 
 export default function ForgotPasswordPage() {
-  const dispatch = useDispatch();
-  const mode = useSelector((state) => state.theme.mode);
+  const theme = useTheme();
   
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    dispatch(setTheme(Cookies.get("theme") || "dark"));
-  }, [dispatch]);
-
-  const theme = (mode || "dark") === "dark" ? darkTheme : lightTheme;
 
   const handleSubmit = async () => {
     const validationError = validateEmail(email);
@@ -80,7 +70,13 @@ export default function ForgotPasswordPage() {
         Forgot Password?
       </Typography>
 
-      <Typography variant="body2" sx={{ marginBottom: "32px", textAlign: "center" }}>
+      <Typography 
+        variant="body2" 
+        sx={{ 
+          marginBottom: "32px", 
+          textAlign: "center",
+        }}
+      >
         No worries! Enter your email address and we'll send you a link to reset your password.
       </Typography>
 
@@ -118,15 +114,27 @@ export default function ForgotPasswordPage() {
 
   const renderSuccess = () => (
     <Box textAlign="center" display="flex" flexDirection="column" gap="24px">
-      <Typography variant="h5" sx={{ fontWeight: 600 }}>
+      <Typography 
+        variant="h5" 
+        sx={{ 
+          fontWeight: 600,
+        }}
+      >
         Check Your Email
       </Typography>
 
-      <Typography variant="body2">
+      <Typography 
+        variant="body2"
+      >
         We've sent a password reset link to {email}
       </Typography>
 
-      <Typography variant="body2" fontSize="12px">
+      <Typography 
+        variant="body2" 
+        sx={{
+          fontSize: "12px",
+        }}
+      >
         Didn't receive the email? Check your spam folder or try again.
       </Typography>
 
@@ -151,48 +159,50 @@ export default function ForgotPasswordPage() {
       <Head>
         <title>Forgot Password | CyberArena</title>
       </Head>
+      <Layout>
+        {loading && <Loader fullscreen />}
 
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Layout>
-          {loading && <Loader fullscreen />}
+        <Box display="flex" alignItems="center" justifyContent="center" p="24px" minHeight="80vh">
+          <Container maxWidth="sm">
+            <Box
+              sx={(theme) => ({
+                backgroundColor: theme.palette.background.paper,
+                color: theme.palette.text.primary,
+                borderRadius: "16px",
+                padding: { xs: "32px", md: "48px" },
+                boxShadow: `0 4px 20px ${
+                  theme.palette.mode === "dark"
+                    ? "rgba(56, 189, 248, 0.2)"
+                    : "rgba(0, 0, 0, 0.1)"
+                }`,
+                border: `1px solid ${
+                  theme.palette.mode === "dark"
+                    ? "rgba(56, 189, 248, 0.25)"
+                    : "rgba(56, 189, 248, 0.2)"
+                }`,
+              })}
+            >
+              {success ? renderSuccess() : renderForm()}
+            </Box>
+          </Container>
+        </Box>
 
-          <Box display="flex" alignItems="center" justifyContent="center" p="24px">
-            <Container maxWidth="sm">
-              <Box
-                sx={{
-                  backgroundColor: theme.palette.background.paper,
-                  borderRadius: "16px",
-                  padding: { xs: "32px", md: "48px" },
-                  boxShadow: `0 4px 20px ${
-                    theme.palette.mode === "dark"
-                      ? "rgba(56, 189, 248, 0.2)"
-                      : "rgba(0, 0, 0, 0.1)"
-                  }`,
-                }}
-              >
-                {success ? renderSuccess() : renderForm()}
-              </Box>
-            </Container>
-          </Box>
-
-          {error && (
-            <Toast
-              message={error}
-              type="error"
-              onClose={() => setError(null)}
-            />
-          )}
-          
-          {success && (
-            <Toast
-              message="Reset link sent successfully!"
-              type="success"
-              onClose={() => setSuccess(false)}
-            />
-          )}
-        </Layout>
-      </ThemeProvider>
+        {error && (
+          <Toast
+            message={error}
+            type="error"
+            onClose={() => setError(null)}
+          />
+        )}
+        
+        {success && (
+          <Toast
+            message="Reset link sent successfully!"
+            type="success"
+            onClose={() => setSuccess(false)}
+          />
+        )}
+      </Layout>
     </>
   );
 }

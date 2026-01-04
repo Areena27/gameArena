@@ -1,19 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, InputField, Button, Toast, Loader } from "@/components/common/uiComponents";
 import { gameAPI } from "@/services/api";
 import { Typography, FormControl, InputLabel, Select, MenuItem, Box } from "@mui/material";
+import { GENRES } from "@/constants/genres";
+import { useRouter } from "next/router";
 
-const GENRES = ["action", "adventure", "puzzle", "rpg", "sports", "strategy", "other"];
-
-export function UploadGameForm({ onSubmit, onSuccess }) {
+export function UploadGameForm({ onSuccess }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     desc: "",
-    genre: "other",
+    genre: "action",
   });
+
+  useEffect(() => {
+    const { id } = router.query;
+    if (id) {
+      // Load game data for editing
+      loadGameData(id);
+    }
+  }, [router.query]);
+
+  const loadGameData = async (gameId) => {
+    setLoading(true);
+    try {
+      const response = await gameAPI.listDeveloperGames();
+      const game = response.data?.find((g) => g._id === gameId);
+      if (game) {
+        setFormData({
+          title: game.title || "",
+          desc: game.desc || "",
+          genre: game.genre || "action",
+        });
+      }
+    } catch (err) {
+      setError("Failed to load game data");
+      setShowToast(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (key, value) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
@@ -23,7 +52,7 @@ export function UploadGameForm({ onSubmit, onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.desc || !formData.genre) {
+    if (!formData.title?.trim() || !formData.desc?.trim() || !formData.genre) {
       setError("All fields are required");
       setShowToast(true);
       return;
@@ -35,31 +64,38 @@ export function UploadGameForm({ onSubmit, onSuccess }) {
       return;
     }
 
+    if (formData.desc.length > 500) {
+      setError("Description must be less than 500 characters");
+      setShowToast(true);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const response = await gameAPI.createGame({
-        title: formData.title,
-        desc: formData.desc,
-        genre: formData.genre,
-      });
+      const { id } = router.query;
+      let response;
+      
+      if (id) {
+        response = await gameAPI.updateGame(id, {
+          title: formData.title.trim(),
+          desc: formData.desc.trim(),
+          genre: formData.genre,
+        });
+      } else {
+        response = await gameAPI.createGame({
+          title: formData.title.trim(),
+          desc: formData.desc.trim(),
+          genre: formData.genre,
+        });
+      }
 
       if (onSuccess) {
         onSuccess(response);
       }
-      
-      setFormData({
-        title: "",
-        desc: "",
-        genre: "other",
-      });
-
-      if (onSubmit) {
-        onSubmit(response.data);
-      }
     } catch (err) {
-      setError(err.message || "Failed to create game");
+      setError(err.message || "Failed to save game");
       setShowToast(true);
     } finally {
       setLoading(false);
@@ -70,33 +106,37 @@ export function UploadGameForm({ onSubmit, onSuccess }) {
     <>
       {loading && <Loader fullscreen />}
       <Card>
-        <Typography variant="h5" sx={{ marginBottom: "16px" }}>
-          Upload Game
-        </Typography>
-
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           <InputField
             label="Game Title"
             value={formData.title}
-            onChange={(e) =>
-              handleChange("title", e.target.value)
-            }
+            onChange={(e) => handleChange("title", e.target.value)}
+            placeholder="Enter game title"
             error={error && !formData.title ? error : null}
+            required
           />
 
           <InputField
             label="Description"
             value={formData.desc}
-            onChange={(e) =>
-              handleChange("desc", e.target.value)
+            onChange={(e) => handleChange("desc", e.target.value)}
+            placeholder="Describe your game..."
+            error={
+              error && formData.desc
+                ? formData.desc.length < 8
+                  ? "Description must be at least 8 characters"
+                  : formData.desc.length > 500
+                  ? "Description must be less than 500 characters"
+                  : null
+                : null
             }
-            error={error && formData.desc && formData.desc.length < 8 ? "Description must be at least 8 characters" : null}
-            helperText="Minimum 8 characters, maximum 500 characters"
+            helperText="8-500 characters"
             multiline
-            rows={4}
+            rows={5}
+            required
           />
 
-          <FormControl fullWidth>
+          <FormControl fullWidth required>
             <InputLabel>Genre</InputLabel>
             <Select
               value={formData.genre}
@@ -111,12 +151,21 @@ export function UploadGameForm({ onSubmit, onSuccess }) {
             </Select>
           </FormControl>
 
-          <Button 
-            label={loading ? "Submitting..." : "Submit Game"} 
-            onClick={handleSubmit}
-            disabled={loading}
-            type="submit"
-          />
+          <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
+            <Button
+              label={loading ? "Saving..." : router.query.id ? "Update Game" : "Submit Game"}
+              onClick={handleSubmit}
+              disabled={loading}
+              type="submit"
+              sx={{ flex: 1 }}
+            />
+            <Button
+              label="Cancel"
+              variant="secondary"
+              onClick={() => router.push("/developer/dashboard")}
+              sx={{ flex: 1 }}
+            />
+          </Box>
         </Box>
 
         {showToast && error && (

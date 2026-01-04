@@ -5,7 +5,7 @@ import { CssBaseline, ThemeProvider, AppBar, Toolbar, Typography, IconButton, Bo
 import { useTheme } from "@mui/material/styles";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-import Cookies from "js-cookie";
+import { Cookies } from "react-cookie";
 
 import { lightTheme, darkTheme } from "@/styles/mui/theme";
 import { setTheme, toggleTheme } from "@/redux/slices/themeSlice";
@@ -13,6 +13,8 @@ import { logout } from "@/redux/slices/authSlice";
 import { authAPI } from "@/services/api";
 import { Button } from "@/components/common/uiComponents";
 import { GENRES } from "@/constants/genres";
+
+const cookies = new Cookies();
 
 const NAV_LINKS = [
   { label: "Home", action: (r) => r.push("/") },
@@ -40,7 +42,14 @@ function NavBar({ filters, onFilterChange }) {
   useEffect(() => setMounted(true), []);
 
   const handleLogout = async () => {
-    try { await authAPI.logout(); } finally { dispatch(logout()); router.push("/"); }
+    try { 
+      await authAPI.logout(); 
+    } finally { 
+      cookies.remove("token", { path: "/" });
+      cookies.remove("role", { path: "/" });
+      dispatch(logout()); 
+      router.push("/"); 
+    }
   };
 
   const isDark = muiTheme.palette.mode === "dark";
@@ -73,7 +82,11 @@ function NavBar({ filters, onFilterChange }) {
         </Box>
 
         <Box display="flex" gap="12px" alignItems="center" flexWrap="wrap">
-          {mounted && <IconButton onClick={() => dispatch(toggleTheme())} aria-label="Toggle theme" sx={{ color: muiTheme.palette.text.primary, "&:hover": { transform: "scale(1.15)", filter: "drop-shadow(0 0 6px rgba(168, 85, 247, 0.8))" } }}>{theme === "dark" ? <LightModeIcon /> : <DarkModeIcon />}</IconButton>}
+          {mounted && <IconButton onClick={() => {
+            const newTheme = theme === "dark" ? "light" : "dark";
+            cookies.set("theme", newTheme, { path: "/", maxAge: 60 * 60 * 24 * 365 });
+            dispatch(toggleTheme());
+          }} aria-label="Toggle theme" sx={{ color: muiTheme.palette.text.primary, "&:hover": { transform: "scale(1.15)", filter: "drop-shadow(0 0 6px rgba(168, 85, 247, 0.8))" } }}>{theme === "dark" ? <LightModeIcon /> : <DarkModeIcon />}</IconButton>}
           {!isAuthenticated ? (
             <>
               <Button label="Login" variant="secondary" onClick={() => router.push("/auth/login")} />
@@ -127,7 +140,11 @@ export default function Layout({ children, filters, onFilterChange }) {
   const mode = useSelector((state) => state.theme.mode);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { setMounted(true); dispatch(setTheme(Cookies.get("theme") || "dark")); }, [dispatch]);
+  useEffect(() => { 
+    setMounted(true); 
+    const theme = cookies.get("theme") || "dark";
+    dispatch(setTheme(theme));
+  }, [dispatch]);
 
   const theme = (mode || "dark") === "dark" ? darkTheme : lightTheme;
 
