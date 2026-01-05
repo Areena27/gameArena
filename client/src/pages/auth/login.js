@@ -9,7 +9,7 @@ import Layout from "@/components/common/layoutComponent";
 import AuthLayout from "@/components/common/authLayout";
 import { InputField, Button, Toast, Loader } from "@/components/common/uiComponents";
 import { login } from "@/redux/slices/authSlice";
-import { authAPI } from "@/services/api";
+import { authAPI, userAPI } from "@/services/api";
 import { setTheme } from "@/redux/slices/themeSlice";
 
 const cookies = new Cookies();
@@ -34,11 +34,16 @@ export default function LoginPage() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     const theme = cookies.get("theme") || "dark";
     dispatch(setTheme(theme));
-  }, [dispatch]);
+    
+    if (router.query.signupSuccess === "true") {
+      setShowSuccess(true);
+    }
+  }, [dispatch, router.query]);
 
   const handleChange = (key, value) => {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -62,14 +67,38 @@ export default function LoginPage() {
         throw new Error(response?.message || "Login failed");
       }
 
-      const role = response.data?.role || "user";
-      
+      // Set token cookie first for authenticated requests
+      cookies.set("token", response.token, { path: "/", maxAge: 60 * 60 * 24 * 7 });
+
+      // Get role from response or fetch from user profile
+      let role = response.data?.role;
+      if (!role) {
+        try {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          const userResponse = await userAPI.getUser();
+          if (userResponse?.success && userResponse?.data?.role) {
+            role = userResponse.data.role;
+          }
+        } catch (err) {
+          console.error("Failed to fetch user profile:", err);
+        }
+      }
+
+      // Default to user if role still not found
+      role = role || "user";
+
       dispatch(login({
         token: response.token,
         role: role,
       }));
 
-      router.push("/");
+      // Role-based routing
+      const normalizedRole = role.toLowerCase().trim();
+      if (normalizedRole === "developer") {
+        router.push("/developer/developer_home");
+      } else {
+        router.push("/user/home");
+      }
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || "Internal Server Error");
     } finally {
@@ -161,6 +190,14 @@ export default function LoginPage() {
             message={error}
             type="error"
             onClose={() => setError(null)}
+          />
+        )}
+
+        {showSuccess && (
+          <Toast
+            message="Account created successfully. Please login."
+            type="success"
+            onClose={() => setShowSuccess(false)}
           />
         )}
       </Layout>

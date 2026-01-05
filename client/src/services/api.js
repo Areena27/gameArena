@@ -61,6 +61,15 @@ export const authAPI = {
   },
 };
 
+// User API
+export const userAPI = {
+  getUser: async () => {
+    return apiRequest("/update", {
+      method: "GET",
+    });
+  },
+};
+
 // Game API
 export const gameAPI = {
   // Create game (developer only)

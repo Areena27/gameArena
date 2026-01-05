@@ -1,8 +1,8 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { Container, Typography, Box } from "@mui/material";
+import { Container, Typography } from "@mui/material";
 import { UploadGameForm } from "@/components/common/developerComponents";
-import Layout from "@/components/common/layoutComponent";
+import DeveloperLayout from "@/components/common/DeveloperLayout";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function UploadPage() {
       <Head>
         <title>Upload Game | CyberArena</title>
       </Head>
-      <Layout>
+      <DeveloperLayout>
         <Container maxWidth="md" sx={{ py: 4 }}>
           <Typography
             variant="h4"
@@ -33,7 +33,7 @@ export default function UploadPage() {
           </Typography>
           <UploadGameForm onSuccess={handleSuccess} />
         </Container>
-      </Layout>
+      </DeveloperLayout>
     </>
   );
 }

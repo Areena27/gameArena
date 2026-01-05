@@ -97,14 +97,8 @@ export default function SignUpPage() {
         throw new Error(response?.message || "Signup failed");
       }
 
-      const role = response.data?.role || userType;
-      
-      dispatch(login({
-        token: response.token,
-        role: role,
-      }));
-
-      router.push("/");
+      // Redirect to login with success message
+      router.push("/auth/login?signupSuccess=true");
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || "Internal Server Error");
     } finally {

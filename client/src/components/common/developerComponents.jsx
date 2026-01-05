@@ -14,6 +14,7 @@ export function UploadGameForm({ onSuccess }) {
     title: "",
     desc: "",
     genre: "action",
+    gameFile: null,
   });
 
   useEffect(() => {
@@ -84,11 +85,18 @@ export function UploadGameForm({ onSuccess }) {
           genre: formData.genre,
         });
       } else {
-        response = await gameAPI.createGame({
+        const gamePayload = {
           title: formData.title.trim(),
           desc: formData.desc.trim(),
           genre: formData.genre,
-        });
+        };
+        
+        // If file is selected, add it to the payload
+        if (formData.gameFile) {
+          gamePayload.gameFile = formData.gameFile;
+        }
+        
+        response = await gameAPI.createGame(gamePayload);
       }
 
       if (onSuccess) {
@@ -135,6 +143,37 @@ export function UploadGameForm({ onSuccess }) {
             rows={5}
             required
           />
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 500 }}>
+              Upload Game File
+            </Typography>
+            <input
+              type="file"
+              accept=".zip,.rar,.7z,.exe,.html,.js"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  handleChange("gameFile", file);
+                }
+              }}
+              style={{ display: "none" }}
+              id="game-file-upload"
+            />
+            <label htmlFor="game-file-upload">
+              <Button
+                component="span"
+                label={formData.gameFile ? formData.gameFile.name : "Browse Files"}
+                variant="secondary"
+                sx={{ width: "100%", justifyContent: "flex-start" }}
+              />
+            </label>
+            {formData.gameFile && (
+              <Typography variant="caption" sx={{ color: "text.secondary", ml: 1 }}>
+                Selected: {formData.gameFile.name} ({(formData.gameFile.size / 1024 / 1024).toFixed(2)} MB)
+              </Typography>
+            )}
+          </Box>
 
           <FormControl fullWidth required>
             <InputLabel>Genre</InputLabel>
