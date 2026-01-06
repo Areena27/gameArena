@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Box, Typography, List, ListItem } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { Button } from "@/components/common/uiComponents";
+import { Button } from "@/components/common/ui/uiComponents";
 
 export function AdminGameTable({ games, onApprove, onReject }) {
   const theme = useTheme();

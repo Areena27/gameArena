@@ -1,8 +1,8 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { Container, Typography } from "@mui/material";
-import { UploadGameForm } from "@/components/common/developerComponents";
-import DeveloperLayout from "@/components/common/DeveloperLayout";
+import { UploadGameForm } from "@/components/developer/developerComponents";
+import DeveloperLayout from "@/components/developer/DeveloperLayout";
 
 export default function UploadPage() {
   const router = useRouter();

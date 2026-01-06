@@ -1,4 +1,4 @@
-import { Card, Button } from "@/components/common/uiComponents";
+import { Card, Button } from "@/components/common/ui/uiComponents";
 import { Box, Typography, Rating, Chip } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 
@@ -79,5 +79,4 @@ export function GameCard({
     </Card>
   );
 }
-
 

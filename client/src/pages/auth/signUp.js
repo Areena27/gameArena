@@ -2,32 +2,19 @@ import Head from "next/head";
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/router";
-import { Box, Typography, Link } from "@mui/material";
 import { Cookies } from "react-cookie";
-
-import Layout from "@/components/common/layoutComponent";
-import AuthLayout from "@/components/common/authLayout";
-import { InputField, Button, Toast, Loader } from "@/components/common/uiComponents";
-import { login } from "@/redux/slices/authSlice";
+import { Link } from "@mui/material";
+import Layout from "@/components/common/layout/layoutComponent";
+import AuthLayout from "@/components/common/layout/authLayout";
+import { InputField, Button, Toast, Loader } from "@/components/common/ui/uiComponents";
+import { AuthFormTitle, AuthFormSubtitle, AuthFormWrapper, AuthFormFooter } from "@/components/auth/AuthComponents";
 import { authAPI } from "@/services/api";
 import { setTheme } from "@/redux/slices/themeSlice";
+import { Box } from "@mui/material";
 
 const cookies = new Cookies();
-
-const INITIAL_FORM = {
-  name: "",
-  email: "",
-  age: "",
-  dob: "",
-  password: "",
-  confirmPassword: "",
-};
-
-const USER_TYPES = {
-  USER: "user",
-  DEVELOPER: "developer",
-};
-
+const INITIAL_FORM = { name: "", email: "", age: "", dob: "", password: "", confirmPassword: "" };
+const USER_TYPES = { USER: "user", DEVELOPER: "developer" };
 const FORM_FIELDS = [
   { key: "name", label: "Name", type: "text", placeholder: "Enter your name" },
   { key: "email", label: "Email", type: "email", placeholder: "Enter your email" },
@@ -38,18 +25,10 @@ const FORM_FIELDS = [
 ];
 
 const validateForm = (form) => {
-  if (!form.name || !form.email || !form.password) {
-    return "Some fields are missing";
-  }
-  if (form.password !== form.confirmPassword) {
-    return "Passwords do not match";
-  }
-  if (form.password.length < 8) {
-    return "Password must be at least 8 characters";
-  }
-  if (form.age && (form.age < 12 || form.age > 60)) {
-    return "Age must be between 12 and 60";
-  }
+  if (!form.name || !form.email || !form.password) return "Some fields are missing";
+  if (form.password !== form.confirmPassword) return "Passwords do not match";
+  if (form.password.length < 8) return "Password must be at least 8 characters";
+  if (form.age && (form.age < 12 || form.age > 60)) return "Age must be between 12 and 60";
   return null;
 };
 
@@ -67,7 +46,7 @@ export default function SignUpPage() {
   }, [dispatch]);
 
   const handleChange = (key, value) => {
-    setForm(prev => ({ ...prev, [key]: value }));
+    setForm((prev) => ({ ...prev, [key]: value }));
     setError(null);
   };
 
@@ -92,12 +71,7 @@ export default function SignUpPage() {
       };
 
       const response = await authAPI.signup(payload);
-
-      if (!response?.success || !response?.token) {
-        throw new Error(response?.message || "Signup failed");
-      }
-
-      // Redirect to login with success message
+      if (!response?.success || !response?.token) throw new Error(response?.message || "Signup failed");
       router.push("/auth/login?signupSuccess=true");
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || "Internal Server Error");
@@ -113,30 +87,12 @@ export default function SignUpPage() {
       <Head>
         <title>Sign Up | CyberArena</title>
       </Head>
-
       <Layout>
         {loading && <Loader fullscreen />}
-
         <AuthLayout>
-          <Box display="flex" flexDirection="column" gap="20px" width="100%">
-            <Typography
-              variant="h4"
-              className="gaming-title"
-              sx={{
-                fontFamily: "'Jersey 10', sans-serif",
-                fontWeight: 400,
-                marginBottom: "8px",
-                textTransform: "uppercase",
-                letterSpacing: "2px",
-              }}
-            >
-              {isUser ? "SignUp for the Adventure" : "Create Developer Account"}
-            </Typography>
-
-            <Typography variant="body2" sx={{ marginBottom: "16px" }}>
-              Create your account to get started
-            </Typography>
-
+          <AuthFormWrapper>
+            <AuthFormTitle>{isUser ? "SignUp for the Adventure" : "Create Developer Account"}</AuthFormTitle>
+            <AuthFormSubtitle>Create your account to get started</AuthFormSubtitle>
             <Box display="flex" gap="12px" mb="8px">
               {Object.entries(USER_TYPES).map(([key, value]) => (
                 <Button
@@ -148,7 +104,6 @@ export default function SignUpPage() {
                 />
               ))}
             </Box>
-
             {FORM_FIELDS.map(({ key, label, type, placeholder, helperText, labelProps }) => (
               <InputField
                 key={key}
@@ -161,39 +116,21 @@ export default function SignUpPage() {
                 InputLabelProps={labelProps}
               />
             ))}
-
             <Button
               label={loading ? "Creating Account..." : `Create ${isUser ? "User" : "Developer"} Account`}
               onClick={handleSignUp}
               disabled={loading}
               sx={{ marginTop: "8px" }}
             />
-
-            <Box textAlign="center" mt="8px">
-              <Typography variant="body2">
-                Already have an account?{" "}
-                <Link
-                  href="/auth/login"
-                  sx={{
-                    color: "secondary.main",
-                    fontWeight: 500,
-                    "&:hover": { textDecoration: "underline" },
-                  }}
-                >
-                  Login
-                </Link>
-              </Typography>
-            </Box>
-          </Box>
+            <AuthFormFooter>
+              Already have an account?{" "}
+              <Link href="/auth/login" sx={{ color: "secondary.main", fontWeight: 500, "&:hover": { textDecoration: "underline" } }}>
+                Login
+              </Link>
+            </AuthFormFooter>
+          </AuthFormWrapper>
         </AuthLayout>
-
-        {error && (
-          <Toast
-            message={error}
-            type="error"
-            onClose={() => setError(null)}
-          />
-        )}
+        {error && <Toast message={error} type="error" onClose={() => setError(null)} />}
       </Layout>
     </>
   );

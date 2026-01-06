@@ -12,17 +12,17 @@ import { Cookies } from "react-cookie";
 import { toggleTheme } from "@/redux/slices/themeSlice";
 import { logout } from "@/redux/slices/authSlice";
 import { authAPI } from "@/services/api";
-import { Button } from "@/components/common/uiComponents";
+import { Button } from "@/components/common/ui/uiComponents";
 
 const cookies = new Cookies();
 
 const LINKS = [
-  { label: "Dashboard", href: "/developer/dashboard" },
-  { label: "Upload", href: "/developer/upload" },
-  { label: "Profile", href: "/developer/profile" },
+  { label: "Games", href: "/user/home" },
+  { label: "Upgrade", href: "/user/upgrade" },
+  { label: "Profile", href: "/user/profile" },
 ];
 
-export default function DeveloperNavbar() {
+export default function UserNavbar() {
   const dispatch = useDispatch();
   const router = useRouter();
   const muiTheme = useTheme();
@@ -67,7 +67,7 @@ export default function DeveloperNavbar() {
         <Typography
           variant="h6"
           component="h2"
-          onClick={() => router.push("/developer/developer_home")}
+          onClick={() => router.push("/user/home")}
           sx={{
             color: muiTheme.palette.secondary.main,
             fontWeight: 600,
@@ -118,7 +118,7 @@ export default function DeveloperNavbar() {
             </IconButton>
           )}
           <IconButton
-            onClick={() => router.push("/developer/profile")}
+            onClick={() => router.push("/user/profile")}
             aria-label="Profile"
             sx={{
               color: muiTheme.palette.text.primary,

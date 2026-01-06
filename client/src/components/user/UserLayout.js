@@ -5,7 +5,7 @@ import { Cookies } from "react-cookie";
 
 import { lightTheme, darkTheme } from "@/styles/mui/theme";
 import { setTheme } from "@/redux/slices/themeSlice";
-import UserNavbar from "@/components/common/UserNavbar";
+import UserNavbar from "@/components/user/UserNavbar";
 
 const cookies = new Cookies();
 

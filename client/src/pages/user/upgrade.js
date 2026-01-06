@@ -1,8 +1,8 @@
 import Head from "next/head";
 import { Container, Typography, Box, Grid } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import UserLayout from "@/components/common/UserLayout";
-import { Card, Button } from "@/components/common/uiComponents";
+import UserLayout from "@/components/user/UserLayout";
+import { Card, Button } from "@/components/common/ui/uiComponents";
 
 export default function UserUpgrade() {
   const theme = useTheme();

@@ -48,3 +48,4 @@ export function Toast({ message, type = "success", onClose, open = true }) {
     </Snackbar>
   );
 }
+
