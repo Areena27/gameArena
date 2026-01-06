@@ -55,28 +55,34 @@ export default function LoginPage() {
 
     try {
       const response = await authAPI.login({ email: form.email, password: form.password });
-      if (!response?.success || !response?.token) throw new Error(response?.message || "Login failed");
+      if (!response?.success || !response?.token) {
+        throw new Error(response?.message || "Login failed");
+      }
 
       cookies.set("token", response.token, { path: "/", maxAge: 60 * 60 * 24 * 7 });
 
-      let role = response.data?.role;
-      if (!role) {
-        try {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          const userResponse = await userAPI.getUser();
-          if (userResponse?.success && userResponse?.data?.role) role = userResponse.data.role;
-        } catch (err) {
-          console.error("Failed to fetch user profile:", err);
+      // Fetch user profile to get role (login response doesn't include user data)
+      let role = "user"; // Default role
+      try {
+        // Wait a bit for cookie to be set and available for subsequent requests
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        const userResponse = await userAPI.getUser();
+        if (userResponse?.success && userResponse?.data?.role) {
+          role = userResponse.data.role;
         }
+      } catch (err) {
+        console.error("Failed to fetch user profile:", err);
+        // Continue with default role if fetch fails
       }
 
-      role = role || "user";
       dispatch(login({ token: response.token, role }));
 
       const normalizedRole = role.toLowerCase().trim();
       router.push(normalizedRole === "developer" ? "/developer/developer_home" : "/user/home");
     } catch (err) {
-      setError(err?.response?.data?.message || err?.message || "Internal Server Error");
+      console.error("Login error:", err);
+      const errorMessage = err?.response?.data?.message || err?.message || "An error occurred during login";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

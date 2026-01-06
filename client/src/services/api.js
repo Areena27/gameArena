@@ -64,7 +64,7 @@ export const authAPI = {
 // User API
 export const userAPI = {
   getUser: async () => {
-    return apiRequest("/update", {
+    return apiRequest("/user", {
       method: "GET",
     });
   },
