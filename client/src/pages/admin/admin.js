@@ -103,6 +103,8 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error("Failed to fetch game stats:", err);
+      setError(err.message || "Failed to fetch game stats");
+      setShowToast(true);
     }
   };
 

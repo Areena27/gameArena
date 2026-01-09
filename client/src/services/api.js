@@ -28,7 +28,11 @@ const apiRequest = async (endpoint, options = {}) => {
   } catch (error) {
     if (error.response) {
       // Server responded with error status
-      throw new Error(error.response.data?.message || "An error occurred");
+      const status = error.response.status;
+      const statusText = error.response.statusText;
+      const serverMessage = error.response.data?.message || error.response.data?.error;
+      // If server didn't return JSON with `message`, show status so it's debuggable (e.g. 404 Not Found)
+      throw new Error(serverMessage || `${status} ${statusText} (API: ${endpoint})`);
     } else if (error.request) {
       // Request made but no response received
       throw new Error("Network error. Please check your connection.");

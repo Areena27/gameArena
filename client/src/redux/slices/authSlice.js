@@ -6,7 +6,8 @@ const cookies = new Cookies();
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    isAuthenticated: !!cookies.get("token"),
+    // token cookie may be httpOnly (server-set), so rely on role cookie as well
+    isAuthenticated: !!cookies.get("token") || (!!cookies.get("role") && cookies.get("role") !== "guest"),
     role: cookies.get("role") || "guest",
     token: cookies.get("token") || null,
   },
@@ -30,7 +31,8 @@ const authSlice = createSlice({
     },
     initializeAuth(state, action) {
       const { token, role } = action.payload;
-      state.isAuthenticated = !!token;
+      // token might not be readable if cookie is httpOnly; role is enough to treat as logged in on client
+      state.isAuthenticated = !!token || (!!role && role !== "guest");
       state.token = token || null;
       state.role = role || "guest";
     },
