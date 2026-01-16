@@ -100,7 +100,7 @@ export default function UserUpgrade() {
                       Premium Plan
                     </Typography>
                     <Typography variant="h3" sx={{ mb: 3, color: (theme) => theme.palette.secondary.main }}>
-                      $9.99
+                      ₹999
                       <Typography component="span" variant="body2" sx={{ color: (theme) => theme.palette.text.secondary, ml: 1 }}>
                         /month
                       </Typography>
